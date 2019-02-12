@@ -1,3 +1,9 @@
 <resources>
     <string name="app_name">GeoTask</string>
+    <string name="deleted">Deleted</string>
+    <string name="undo">Undo</string>
+    <string name="empty_view_text">No Data</string>
+    <string name="name">Name</string>
+    <string name="radius">Radius</string>
+    <string name="delete">Delete</string>
 </resources>
