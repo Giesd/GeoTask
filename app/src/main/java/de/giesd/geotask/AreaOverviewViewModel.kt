@@ -6,13 +6,12 @@ import android.app.Application
 import android.arch.lifecycle.AndroidViewModel
 import android.arch.lifecycle.LiveData
 import android.arch.lifecycle.MutableLiveData
-import android.content.Context
 import android.os.AsyncTask
 import android.support.annotation.RequiresPermission
 
 class AreaOverviewViewModel(application: Application) : AndroidViewModel(application) {
 
-    private val areaDao = AreaDatabase.getInstance(application).areaDao()
+    private val areaDao = AreaDatabase.getInstance().areaDao()
     val areas = areaDao.getAllAsync()
     private val _lastDeleted: MutableLiveData<List<Area>> = MutableLiveData()
     val lastDeleted: LiveData<List<Area>>
@@ -25,25 +24,25 @@ class AreaOverviewViewModel(application: Application) : AndroidViewModel(applica
 
     @SuppressLint("MissingPermission")
     @RequiresPermission(Manifest.permission.ACCESS_FINE_LOCATION)
-    fun toggleAreaActive(context: Context, area: Area) {
+    fun toggleAreaActive(area: Area) {
         val toggledArea = area.withActive(!area.active)
         UpdateAsyncTask(areaDao, toggledArea).execute()
         if (toggledArea.active) {
-            GeofencingManager.monitorGeofence(context, toggledArea)
+            GeofencingManager.monitorGeofence(toggledArea)
         } else {
-            GeofencingManager.unmonitor(context, toggledArea)
+            GeofencingManager.unmonitor(toggledArea)
         }
     }
 
-    fun deleteById(context: Context,ids: Collection<Int>) {
-        delete(context, areas.value?.filter { ids.contains(it.id) } ?: emptyList())
+    fun deleteById(ids: Collection<Int>) {
+        delete(areas.value?.filter { ids.contains(it.id) } ?: emptyList())
     }
 
-    fun delete(context: Context, areas: Collection<Area>) {
+    fun delete(areas: Collection<Area>) {
         _lastDeleted.value = areas.toList()
         val ids = areas.map { it.id }
         DeleteAsyncTask(areaDao, ids).execute()
-        GeofencingManager.unmonitor(context, areas.filter { it.active })
+        GeofencingManager.unmonitor(areas.filter { it.active })
     }
 
     fun undelete() {
@@ -51,7 +50,7 @@ class AreaOverviewViewModel(application: Application) : AndroidViewModel(applica
             if (deleted.isNotEmpty()) {
                 InsertAsyncTask(areaDao, deleted).execute()
                 _lastDeleted.value = emptyList()
-                GeofencingManager.unmonitor(getApplication(), deleted.filter { it.active })
+                GeofencingManager.unmonitor(deleted.filter { it.active })
             }
         }
     }

@@ -2,7 +2,6 @@ package de.giesd.geotask
 
 import android.app.IntentService
 import android.content.Intent
-import android.os.AsyncTask
 import android.util.Log
 import com.google.android.gms.location.Geofence
 import com.google.android.gms.location.GeofencingEvent
@@ -27,7 +26,7 @@ class GeofenceTransitionIntentService : IntentService("GeofenceTransitionIntentS
     }
 
     private fun setAreaInside(id: Int, inside: Boolean) {
-        val dao = AreaDatabase.getInstance(applicationContext).areaDao()
+        val dao = AreaDatabase.getInstance().areaDao()
         dao.setInside(id, inside)
         // TODO: run in background
         Log.i("GeofenceIntentService", "setAreaInside")

@@ -12,7 +12,7 @@ class AddressWorker(context: Context, params: WorkerParameters) : Worker(context
     }
 
     override fun doWork(): Result {
-        val dao = AreaDatabase.getInstance(applicationContext).areaDao()
+        val dao = AreaDatabase.getInstance().areaDao()
         val id = inputData.getInt(PARAM_ID, 0)
         if (id == 0) {
             return Result.failure()

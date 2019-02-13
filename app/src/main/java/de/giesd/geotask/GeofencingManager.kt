@@ -8,7 +8,6 @@ import android.content.Intent
 import android.support.annotation.RequiresPermission
 import android.util.Log
 import com.google.android.gms.location.Geofence
-import com.google.android.gms.location.GeofencingClient
 import com.google.android.gms.location.GeofencingRequest
 import com.google.android.gms.location.LocationServices
 import com.google.android.gms.tasks.Task
@@ -16,56 +15,53 @@ import com.google.android.gms.tasks.Task
 object GeofencingManager {
 
     private const val requestIdPrefix = "GeoTask-"
-
-    @SuppressLint("MissingPermission")
-    @RequiresPermission(Manifest.permission.ACCESS_FINE_LOCATION)
-    fun monitorGeofences(context: Context, areas: Iterable<Area>) {
-        val client = LocationServices.getGeofencingClient(context.applicationContext)
-        areas.forEach { monitorGeofence(context, it, client) }
+    private val geofencingClient by lazy {
+        LocationServices.getGeofencingClient(GeoTaskApplication.appContext)
     }
 
     @SuppressLint("MissingPermission")
     @RequiresPermission(Manifest.permission.ACCESS_FINE_LOCATION)
-    fun monitorGeofence(context: Context, area: Area, geofencingClient: GeofencingClient? = null) {
+    fun monitorGeofences(areas: Iterable<Area>) {
+        areas.forEach { monitorGeofence(it) }
+    }
+
+    @SuppressLint("MissingPermission")
+    @RequiresPermission(Manifest.permission.ACCESS_FINE_LOCATION)
+    fun monitorGeofence(area: Area) {
         val geofence = getGeofence(area)
         val request = getRequest(geofence)
-        val client = geofencingClient ?: LocationServices.getGeofencingClient(context.applicationContext)
-        client.addGeofences(request, getGeofencePendingIntent(context, area.id))
+        geofencingClient.addGeofences(request, getGeofencePendingIntent(area.id))
         Log.i("GeofencingManager", "monitoring " + area.name)
     }
 
     @SuppressLint("MissingPermission")
     @RequiresPermission(Manifest.permission.ACCESS_FINE_LOCATION)
     fun monitorAllActive(context: Context) {
-        val dao = AreaDatabase.getInstance(context).areaDao()
+        val dao = AreaDatabase.getInstance().areaDao()
         val activeAreas = dao.getAllActive()
-        val client = LocationServices.getGeofencingClient(context)
         activeAreas.forEach { area ->
-            monitorGeofence(context, area, client)
+            monitorGeofence(area)
         }
     }
 
     @SuppressLint("MissingPermission")
     @RequiresPermission(Manifest.permission.ACCESS_FINE_LOCATION)
-    fun updateAll(context: Context, areas: Iterable<Area>) {
+    fun updateAll(areas: Iterable<Area>) {
         val activeAreas = areas.filter { it.active }
-        unmonitorAll(context)?.addOnCompleteListener { monitorGeofences(context, activeAreas) }
+        unmonitorAll()?.addOnCompleteListener { monitorGeofences(activeAreas) }
     }
 
-    fun unmonitor(context: Context, area: Area): Task<Void> {
+    fun unmonitor(area: Area): Task<Void> {
         Log.i("GeofencingManager", "unmonitoring " + area.name)
-        val client = LocationServices.getGeofencingClient(context)
-        return client.removeGeofences(listOf(getRequestId(area)))
+        return geofencingClient.removeGeofences(listOf(getRequestId(area)))
     }
 
-    fun unmonitor(context: Context, areas: Iterable<Area>): Task<Void> {
-        val client =  LocationServices.getGeofencingClient(context)
-        return client.removeGeofences(areas.map { getRequestId(it) })
+    fun unmonitor(areas: Iterable<Area>): Task<Void> {
+        return geofencingClient.removeGeofences(areas.map { getRequestId(it) })
     }
 
-    private fun unmonitorAll(context: Context): Task<Void>? {
-        val client = LocationServices.getGeofencingClient(context)
-        return client.removeGeofences(getGeofencePendingIntent(context, 0))
+    private fun unmonitorAll(): Task<Void>? {
+        return geofencingClient.removeGeofences(getGeofencePendingIntent(0))
     }
 
     private fun getGeofence(area: Area): Geofence {
@@ -95,10 +91,10 @@ object GeofencingManager {
             .build()
     }
 
-    private fun getGeofencePendingIntent(context: Context, id: Int): PendingIntent {
-        val intent = Intent(context, GeofenceTransitionIntentService::class.java)
+    private fun getGeofencePendingIntent(id: Int): PendingIntent {
+        val intent = Intent(GeoTaskApplication.appContext, GeofenceTransitionIntentService::class.java)
         intent.putExtra(EXTRA_AREA_ID, id)
-        return PendingIntent.getService(context, 0, intent,
+        return PendingIntent.getService(GeoTaskApplication.appContext, 0, intent,
             PendingIntent.FLAG_UPDATE_CURRENT)
     }
 

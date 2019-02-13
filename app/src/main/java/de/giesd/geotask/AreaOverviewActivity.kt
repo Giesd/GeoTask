@@ -66,7 +66,7 @@ class AreaOverviewActivity : AppCompatActivity() {
             }
             onSwitchClicked = { area ->
                 if (checkPermission()) {
-                    viewModel.toggleAreaActive(this@AreaOverviewActivity, area)
+                    viewModel.toggleAreaActive(area)
                 }
             }
             emptyView = areaEmptyView
@@ -89,7 +89,7 @@ class AreaOverviewActivity : AppCompatActivity() {
             override fun onActionItemClicked(mode: ActionMode?, item: MenuItem?): Boolean {
                 if (item?.itemId == R.id.delete) {
                     val selectedItems = areaAdapter.getSelectedItems()
-                    viewModel.delete(this@AreaOverviewActivity, selectedItems)
+                    viewModel.delete(selectedItems)
                     mode?.finish()
                     return true
                 }

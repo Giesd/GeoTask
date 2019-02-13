@@ -5,6 +5,6 @@ import android.arch.lifecycle.AndroidViewModel
 
 class TaskerConfigViewModel(application: Application) : AndroidViewModel(application) {
 
-    private val areaDao = AreaDatabase.getInstance(application).areaDao()
+    private val areaDao = AreaDatabase.getInstance().areaDao()
     val areas = areaDao.getAllAsync()
 }

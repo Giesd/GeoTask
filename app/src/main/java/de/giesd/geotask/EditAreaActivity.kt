@@ -14,7 +14,6 @@ import android.widget.SeekBar
 import com.google.android.gms.location.LocationServices
 import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.GoogleMap
-import com.google.android.gms.maps.MapFragment
 import com.google.android.gms.maps.SupportMapFragment
 import com.google.android.gms.maps.model.Circle
 import com.google.android.gms.maps.model.CircleOptions
@@ -124,7 +123,7 @@ class EditAreaActivity : AppCompatActivity() {
     private fun saveArea() {
         viewModel.saveArea()
         if (checkPermission()) {
-            viewModel.monitorGeofence(this)
+            viewModel.monitorGeofence()
         }
         finish()
     }

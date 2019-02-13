@@ -4,11 +4,8 @@ import android.Manifest
 import android.annotation.SuppressLint
 import android.app.Application
 import android.arch.lifecycle.*
-import android.content.Context
-import android.content.pm.PackageManager
 import android.os.AsyncTask
 import android.support.annotation.RequiresPermission
-import android.support.v4.app.ActivityCompat
 import androidx.work.*
 import com.google.android.gms.maps.model.LatLng
 
@@ -28,7 +25,7 @@ class EditAreaViewModel(application: Application, id: Int) : AndroidViewModel(ap
         }
     }
 
-    private val areaDao = AreaDatabase.getInstance(application).areaDao()
+    private val areaDao = AreaDatabase.getInstance().areaDao()
     private val _area = MediatorLiveData<Area>()
     val area: LiveData<Area>
         get() = _area
@@ -72,10 +69,10 @@ class EditAreaViewModel(application: Application, id: Int) : AndroidViewModel(ap
 
     @SuppressLint("MissingPermission")
     @RequiresPermission(Manifest.permission.ACCESS_FINE_LOCATION)
-    fun monitorGeofence(context: Context) {
+    fun monitorGeofence() {
         val area = _area.value
         if (area != null) {
-            GeofencingManager.monitorGeofence(context, area)
+            GeofencingManager.monitorGeofence(area)
         }
     }
 
